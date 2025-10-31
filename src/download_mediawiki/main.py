@@ -4,9 +4,9 @@
 # https://www.mediawiki.org/wiki/API:Allpages
 
 from os import environ
+from os import system as shell
 from time import sleep
 from pathlib import Path
-from os import system as shell
 from argparse import ArgumentParser
 from json import dumps as json_dumps
 
@@ -14,7 +14,7 @@ from requests import get as http_get
 # pylint: disable=W0622
 from requests.exceptions import ConnectionError, ConnectTimeout
 
-# pylint: disable=E0606
+# pylint: disable=E0606,R0912
 MAX_RETRIES = 2
 MAX_PAGES = 10_000  # this script was not designed for huge wiki's
 WAIT_TIME = 0.5  # we do not want to DOS the service
