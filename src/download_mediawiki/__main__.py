@@ -5,7 +5,7 @@ sys_path.append(os_path.dirname(os_path.abspath(__file__)))
 
 # pylint: disable=C0413
 
-from .main import main
+from main import main
 
 
 if __name__ == '__main__':

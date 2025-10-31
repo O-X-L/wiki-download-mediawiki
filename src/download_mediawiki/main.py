@@ -3,6 +3,7 @@
 # https://www.mediawiki.org/wiki/API:Lists
 # https://www.mediawiki.org/wiki/API:Allpages
 
+from os import environ
 from time import sleep
 from pathlib import Path
 from os import system as shell
@@ -18,6 +19,8 @@ MAX_RETRIES = 2
 MAX_PAGES = 10_000  # this script was not designed for huge wiki's
 WAIT_TIME = 0.5  # we do not want to DOS the service
 headers = {'User-Agent': 'MediaWiki Downloader'}
+TEST_PAGES = 5
+TEST_ENV = 'TEST' in environ
 
 
 def _api(params: dict) -> dict:
@@ -105,6 +108,9 @@ def main():
 
             if 'query' in res:
                 for page in res['query']['allpages']:
+                    if TEST_ENV and count > TEST_PAGES:
+                        continue
+
                     count += 1
                     pages[page['pageid']] = page['title']
 
@@ -146,7 +152,7 @@ parser.add_argument(
 args = parser.parse_args()
 
 out_dir = Path(args.out_dir)
-out_dir.mkdir(exist_ok=True)
+out_dir.mkdir(exist_ok=True, parents=True)
 
 if args.convert_to_md and not shell('pandoc --help >/dev/null') == 0:
     raise EnvironmentError(
