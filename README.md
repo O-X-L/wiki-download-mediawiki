@@ -1,7 +1,7 @@
 # MediaWiki Download Script
 
-[![Lint](https://github.com/O-X-L/wiki-download-mediawiki/actions/workflows/lint.yml/badge.svg?branch=main)](https://github.com/O-X-L/wiki-download-mediawiki/actions/workflows/lint.yml)
-[![Test](https://github.com/O-X-L/wiki-download-mediawiki/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/O-X-L/wiki-download-mediawiki/actions/workflows/test.yml)
+[![Lint](https://github.com/O-X-L/wiki-download-mediawiki/actions/workflows/lint.yml/badge.svg?branch=latest)](https://github.com/O-X-L/wiki-download-mediawiki/actions/workflows/lint.yml)
+[![Test](https://github.com/O-X-L/wiki-download-mediawiki/actions/workflows/test.yml/badge.svg?branch=latest)](https://github.com/O-X-L/wiki-download-mediawiki/actions/workflows/test.yml)
 
 This is a very simple script to download the whole contents of MediaWiki instance via its [API](https://www.mediawiki.org/wiki/API).
 
