@@ -5,11 +5,15 @@
 
 from time import sleep
 from pathlib import Path
+from os import system as shell
 from argparse import ArgumentParser
 from json import dumps as json_dumps
 
 from requests import get as http_get
+# pylint: disable=W0622
+from requests.exceptions import ConnectionError, ConnectTimeout
 
+# pylint: disable=E0606
 MAX_RETRIES = 2
 MAX_PAGES = 10_000  # this script was not designed for huge wiki's
 WAIT_TIME = 0.5  # we do not want to DOS the service
@@ -30,7 +34,7 @@ def _api(params: dict) -> dict:
                 timeout=5,
             ).json()
 
-        except ConnectionError:
+        except (ConnectionError, ConnectTimeout):
             retry += 1
 
     raise ConnectionError()
@@ -44,27 +48,31 @@ def _dl_page(ns_id: str, page_id: int, page_title: str):
     file = ns_dir / f'{page_id}.mw'
     if file.is_file() and not args.replace:
         print(f' => {ns_id}:{page_id} Skipping Update')
-        return
 
-    res = _api({
-        'action': 'query',
-        'prop': 'revisions',
-        'rvprop': 'content',
-        'rvslots': 'main',
-        'pageids': page_id,
-        'rvlimit': '1',
-    })['query']['pages'][page_id]
+    else:
+        res = _api({
+            'action': 'query',
+            'prop': 'revisions',
+            'rvprop': 'content',
+            'rvslots': 'main',
+            'pageids': page_id,
+            'rvlimit': '1',
+        })['query']['pages'][page_id]
 
-    latest_revision = res['revisions'][0]
-    content = latest_revision['slots']['main']['*']
+        latest_revision = res['revisions'][0]
+        content = latest_revision['slots']['main']['*']
 
-    with open(file, 'w', encoding='utf-8') as f:
-        f.write(f'# {page_title}' + '\n\n')
-        f.write(content)
+        with open(file, 'w', encoding='utf-8') as f:
+            f.write(f'= {page_title} =' + '\n\n')
+            f.write(content)
+
+    if args.convert_to_md:
+        file_md = ns_dir / f'{page_id}.md'
+        shell(f"pandoc --from mediawiki --to markdown {file} -o {file_md}")
 
 
 def main():
-    test = http_get(API_URL)
+    test = http_get(API_URL, timeout=5)
     if test.content.find(b'MediaWiki API') == -1:
         raise ValueError('URL does not seem to be a MediaWiki API')
 
@@ -117,23 +125,36 @@ def main():
     with open(out_dir / 'overview.json', 'w', encoding='utf-8') as f:
         f.write(json_dumps(ns_pages, indent=2))
 
-    print('\n### DOWNLOADING PAGES ###')
+    print('\n' + f'### DOWNLOADING PAGES ({count:_}) ###')
     for ns_id, pages in ns_pages.items():
         for page_id, page_title in pages.items():
             _dl_page(ns_id=ns_id, page_id=page_id, page_title=page_title)
 
 
+out_dir_default = Path(__file__).parent / 'dump'
+parser = ArgumentParser(prog='MediaWiki Download Script (© OXL IT Services, License: MIT)')
+parser.add_argument('-u', '--url', help='Base-URL of the MediaWiki instance', required=True)
+parser.add_argument('-o', '--out-dir', default=out_dir_default)
+parser.add_argument(
+    '-r', '--replace', default=False, action='store_true',
+    help='Replace/Update existing pages',
+)
+parser.add_argument(
+    '-m', '--convert-to-md', default=False, action='store_true',
+    help='Convert all source-files to Markdown-format (pandoc executable required!)',
+)
+args = parser.parse_args()
+
+out_dir = Path(args.out_dir)
+out_dir.mkdir(exist_ok=True)
+
+if args.convert_to_md and not shell('pandoc --help >/dev/null') == 0:
+    raise EnvironmentError(
+        "No 'pandoc' executable found - required for converting to Markdown-format! "
+        "Install it p.e. via 'apt install pandoc'"
+    )
+
+API_URL = f"{args.url}/api.php"
+
 if __name__ == '__main__':
-    out_dir_default = Path(__file__).parent / 'dump'
-    parser = ArgumentParser(prog='MediaWiki Download Script (© OXL IT Services, License: MIT)')
-    parser.add_argument('-u', '--url', help='Base-URL of the MediaWiki instance', required=True)
-    parser.add_argument('-o', '--out-dir', default=out_dir_default)
-    parser.add_argument('-r', '--replace', help='Replace/Update existing pages', default=False)
-    args = parser.parse_args()
-
-    out_dir = Path(args.out_dir)
-    out_dir.mkdir(exist_ok=True)
-
-    API_URL = f"{args.url}/api.php"
-
     main()

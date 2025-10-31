@@ -1,6 +1,9 @@
 # MediaWiki Download Script
 
-This is a very simple script to download the whole contents of MediaWiki instance via its [API]().
+[![Lint](https://github.com/O-X-L/wiki-download-mediawiki/actions/workflows/lint.yml/badge.svg?branch=main)](https://github.com/O-X-L/wiki-download-mediawiki/actions/workflows/lint.yml)
+[![Test](https://github.com/O-X-L/wiki-download-mediawiki/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/O-X-L/wiki-download-mediawiki/actions/workflows/test.yml)
+
+This is a very simple script to download the whole contents of MediaWiki instance via its [API](https://www.mediawiki.org/wiki/API).
 
 This script should not be used to download huge Wiki's as it will not scale well!
 
@@ -9,6 +12,8 @@ This script should not be used to download huge Wiki's as it will not scale well
 ## Features
 
 * Downloading the content of all pages in their source-format
+  * Only downloading the latest revision (`rvlimit`)
+* Optionally converting all source-files to Markdown-format (using `pandoc`)
 
 We did not yet have the need to also download the images. Feel free to open a PR!
 
@@ -16,23 +21,27 @@ We did not yet have the need to also download the images. Feel free to open a PR
 
 ## Usage
 
-Dependencies:
+Install:
 ```bash
-pip install requests
+pip install download-mediawiki
+
+# or clone & run directly
+python3 src/download_mediawiki/
 ```
 
 Arguments:
 ```bash
-python3 main.py --help
-> usage: MediaWiki Download Script (© OXL IT Services, License: MIT)
->        [-h] -u URL [-o OUT_DIR] [-r REPLACE]
+download-mediawiki --help
+> usage: MediaWiki Download Script (© OXL IT Services, License: MIT) [-h] -u URL [-o OUT_DIR] [-r]
+>                                                                    [-m]
 > 
 > options:
 >   -h, --help            show this help message and exit
 >   -u URL, --url URL     Base-URL of the MediaWiki instance
 >   -o OUT_DIR, --out-dir OUT_DIR
->   -r REPLACE, --replace REPLACE
->                         Replace/Update existing pages
+>   -r, --replace         Replace/Update existing pages
+>   -m, --convert-to-md   Convert all source-files to Markdown-format (pandoc executable
+>                         required!)
 ```
 
 ----
