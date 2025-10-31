@@ -37,6 +37,7 @@ jobs:
 
       - name: Install dependencies
         run: |
+          sudo apt install pandoc >/dev/null
           pip install -r requirements.txt >/dev/null
 
       - name: Running Functional-Test
