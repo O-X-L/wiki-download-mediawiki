@@ -12,7 +12,7 @@ from json import dumps as json_dumps
 
 from requests import get as http_get
 # pylint: disable=W0622
-from requests.exceptions import ConnectionError, ConnectTimeout
+from requests.exceptions import ConnectionError, Timeout
 
 # pylint: disable=E0606,R0912
 MAX_RETRIES = 2
@@ -37,10 +37,10 @@ def _api(params: dict) -> dict:
                 timeout=5,
             ).json()
 
-        except (ConnectionError, ConnectTimeout):
+        except (ConnectionError, Timeout):
             retry += 1
 
-    raise ConnectionError()
+    raise ConnectionError('Retries exceeded')
 
 
 def _dl_page(ns_id: str, page_id: int, page_title: str):
@@ -69,9 +69,19 @@ def _dl_page(ns_id: str, page_id: int, page_title: str):
             f.write(f'= {page_title} =' + '\n\n')
             f.write(content)
 
+    file_conv = ns_dir / page_id
     if args.convert_to_md:
-        file_md = ns_dir / f'{page_id}.md'
-        shell(f"pandoc --from mediawiki --to markdown {file} -o {file_md}")
+        shell(f"pandoc --from mediawiki --to markdown {file} -o {file_conv}.md")
+
+    if args.convert_to_md:
+        shell(f"pandoc --from mediawiki --to gfm {file} -o {file_conv}.md")
+
+    if args.convert_to_rst:
+        # NOTE: --columns=500 fixing multi-line code-blocks
+        shell(f"pandoc --from mediawiki --to rst --columns=500 {file} -o {file_conv}.rst")
+
+    if args.convert_to_html:
+        shell(f"pandoc --from mediawiki --to html {file} -o {file_conv}.html")
 
 
 def main():
@@ -146,8 +156,20 @@ parser.add_argument(
     help='Replace/Update existing pages',
 )
 parser.add_argument(
-    '-m', '--convert-to-md', default=False, action='store_true',
+    '-cm', '--convert-to-md', default=False, action='store_true',
     help='Convert all source-files to Markdown-format (pandoc executable required!)',
+)
+parser.add_argument(
+    '-cr', '--convert-to-rst', default=False, action='store_true',
+    help='Convert all source-files to reStructuredText-format (pandoc executable required!)',
+)
+parser.add_argument(
+    '-ch', '--convert-to-html', default=False, action='store_true',
+    help='Convert all source-files to HTML-format (pandoc executable required!)',
+)
+parser.add_argument(
+    '-cgh', '--convert-to-github-markdown', default=False, action='store_true',
+    help='Convert all source-files to GitHub-Markdown-format (pandoc executable required!)',
 )
 args = parser.parse_args()
 

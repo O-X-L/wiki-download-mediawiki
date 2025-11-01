@@ -32,16 +32,25 @@ python3 src/download_mediawiki/
 Arguments:
 ```bash
 download-mediawiki --help
-> usage: MediaWiki Download Script (© OXL IT Services, License: MIT) [-h] -u URL [-o OUT_DIR] [-r]
->                                                                    [-m]
+> usage: MediaWiki Download Script (© OXL IT Services, License: MIT)
+>        [-h] -u URL [-o OUT_DIR] [-r] [-cm] [-cr] [-ch] [-cgh]
 > 
 > options:
 >   -h, --help            show this help message and exit
 >   -u URL, --url URL     Base-URL of the MediaWiki instance
 >   -o OUT_DIR, --out-dir OUT_DIR
 >   -r, --replace         Replace/Update existing pages
->   -m, --convert-to-md   Convert all source-files to Markdown-format (pandoc executable
->                         required!)
+>   -cm, --convert-to-md  Convert all source-files to Markdown-format (pandoc
+>                         executable required!)
+>   -cr, --convert-to-rst
+>                         Convert all source-files to reStructuredText-format
+>                         (pandoc executable required!)
+>   -ch, --convert-to-html
+>                         Convert all source-files to HTML-format (pandoc
+>                         executable required!)
+>   -cgh, --convert-to-github-markdown
+>                         Convert all source-files to GitHub-Markdown-format
+>                         (pandoc executable required!)
 ```
 
 ----
